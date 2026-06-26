@@ -421,9 +421,10 @@ function renderQuiz() {
   const pct = ((currentOrderIndex + 1) / allSentences.length * 100).toFixed(0);
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('progressText').textContent = `${currentOrderIndex + 1} / ${allSentences.length}`;
-  document.getElementById('prevBtn').disabled = currentOrderIndex === 0;
+  document.getElementById('prevBtn').disabled = currentOrderIndex === 0 && !showingAnswer;
+  const isLast = currentOrderIndex === allSentences.length - 1 && showingAnswer;
   document.getElementById('nextBtn').textContent = showingAnswer ? '次へ ▶' : '答え ▶';
-  document.getElementById('nextBtn').disabled = false;
+  document.getElementById('nextBtn').disabled = isLast;
 }
 
 function rate(sid, level) {
