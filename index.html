@@ -37,13 +37,13 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: var(
 .progress-fill { background: var(--orange); height: 100%; transition: width 0.3s; border-radius: 8px; }
 .progress-text { font-size: 12px; color: var(--gray); text-align: center; margin-bottom: 16px; }
 
-.card { background: white; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 24px; margin-bottom: 16px; }
-.card-word { font-size: 12px; color: var(--orange); font-weight: 700; margin-bottom: 4px; }
+.card { background: white; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 28px 24px; margin-bottom: 16px; }
+.card-word { font-size: 13px; color: var(--orange); font-weight: 700; margin-bottom: 8px; }
 .card-category { font-size: 11px; color: var(--gray); background: var(--gray-light); display: inline-block; padding: 2px 8px; border-radius: 10px; margin-bottom: 12px; }
-.card-ja { font-size: 16px; margin-bottom: 16px; line-height: 1.6; }
-.card-note { background: var(--orange-light); border-left: 3px solid var(--orange); border-radius: 6px; padding: 10px 12px; font-size: 13px; color: #92400e; line-height: 1.5; margin-bottom: 16px; }
-.card-en { font-size: 18px; line-height: 1.6; margin-bottom: 16px; min-height: 54px; }
-.blank { display: inline-block; min-width: 80px; border-bottom: 3px solid var(--orange); text-align: center; color: var(--orange); font-weight: 700; padding: 2px 4px; transition: all 0.3s; }
+.card-ja { font-size: 18px; margin-bottom: 20px; line-height: 1.7; }
+.card-note { background: var(--orange-light); border-left: 3px solid var(--orange); border-radius: 6px; padding: 12px 14px; font-size: 14px; color: #92400e; line-height: 1.6; margin-bottom: 20px; }
+.card-en { font-size: 20px; line-height: 1.8; margin-bottom: 20px; min-height: 60px; }
+.blank { display: inline-block; min-width: 80px; border-bottom: 3px solid var(--orange); text-align: center; color: var(--orange); font-weight: 700; padding: 4px 6px; transition: all 0.3s; }
 .blank.revealed { background: var(--orange-light); border-radius: 4px; border-bottom-color: var(--green); color: var(--green); }
 .blank.wrong { border-bottom-color: var(--red); }
 
@@ -55,7 +55,7 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: var(
 .reveal-btn { width: 100%; padding: 12px; background: var(--gray-light); color: var(--gray); border: none; border-radius: 12px; font-size: 14px; cursor: pointer; margin-bottom: 16px; }
 
 .rating-row { display: flex; gap: 8px; }
-.rating-btn { flex: 1; padding: 12px 8px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; background: white; text-align: center; transition: all 0.2s; }
+.rating-btn { flex: 1; padding: 14px 8px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background: white; text-align: center; transition: all 0.2s; }
 .rating-btn.got { border-color: var(--green); color: var(--green); }
 .rating-btn.ok { border-color: var(--yellow); color: #a16207; }
 .rating-btn.hard { border-color: var(--red); color: var(--red); }
@@ -66,7 +66,7 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: var(
 .rating-btn.hard.selected { background: var(--red); }
 
 .nav-row { display: flex; gap: 8px; margin-top: 12px; }
-.nav-btn { flex: 1; padding: 12px; border: none; border-radius: 12px; font-size: 14px; cursor: pointer; font-weight: 600; }
+.nav-btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; font-weight: 600; }
 .nav-prev { background: var(--gray-light); color: var(--gray); }
 .nav-next { background: var(--orange); color: white; }
 .nav-btn:disabled { opacity: 0.4; }
@@ -421,9 +421,8 @@ function renderQuiz() {
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('progressText').textContent = `${currentOrderIndex + 1} / ${allSentences.length}`;
   document.getElementById('prevBtn').disabled = currentOrderIndex === 0 && !showingAnswer;
-  const isLast = currentOrderIndex === allSentences.length - 1 && showingAnswer;
   document.getElementById('nextBtn').textContent = showingAnswer ? '次へ ▶' : '答え ▶';
-  document.getElementById('nextBtn').disabled = isLast;
+  document.getElementById('nextBtn').disabled = false;
 }
 
 function rate(sid, level) {
@@ -440,7 +439,7 @@ function navigate(dir) {
       showingAnswer = true;
     } else {
       showingAnswer = false;
-      if (currentOrderIndex < allSentences.length - 1) currentOrderIndex++;
+      currentOrderIndex = (currentOrderIndex + 1) % allSentences.length;
     }
   } else {
     if (showingAnswer) {
