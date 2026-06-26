@@ -41,6 +41,7 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: var(
 .card-word { font-size: 12px; color: var(--orange); font-weight: 700; margin-bottom: 4px; }
 .card-category { font-size: 11px; color: var(--gray); background: var(--gray-light); display: inline-block; padding: 2px 8px; border-radius: 10px; margin-bottom: 12px; }
 .card-ja { font-size: 16px; margin-bottom: 16px; line-height: 1.6; }
+.card-note { background: var(--orange-light); border-left: 3px solid var(--orange); border-radius: 6px; padding: 10px 12px; font-size: 13px; color: #92400e; line-height: 1.5; margin-bottom: 16px; }
 .card-en { font-size: 18px; line-height: 1.6; margin-bottom: 16px; min-height: 54px; }
 .blank { display: inline-block; min-width: 80px; border-bottom: 3px solid var(--orange); text-align: center; color: var(--orange); font-weight: 700; padding: 2px 4px; transition: all 0.3s; }
 .blank.revealed { background: var(--orange-light); border-radius: 4px; border-bottom-color: var(--green); color: var(--green); }
@@ -256,6 +257,8 @@ let customWords = [];
 let shuffleMode = false;
 let todayViewed = {};
 let todayViewedDate = null;
+let showingAnswer = false;
+let showingAnswer = false;
 
 function init() {
   loadState();
@@ -308,7 +311,7 @@ function buildSentenceList() {
       const answer = blanks.join(' ');
       allSentences.push({
         sid, word: w.word, number: w.number || '', category: w.category || '',
-        ja: s.ja, en: s.en, answer
+        ja: s.ja, en: s.en, answer, note: s.note || ''
       });
     });
   });
@@ -390,78 +393,37 @@ function renderQuiz() {
   const ci = getCurrentIndex();
   const s = allSentences[ci];
   const rating = ratings[s.sid];
-  const isAnswered = answered[s.sid];
 
   trackView(s.sid);
 
-  const enDisplay = s.en.replace(/\{([^}]+)\}/g, (_, word) => {
-    if (isAnswered) return `<span class="blank revealed">${word}</span>`;
-    return `<span class="blank" id="blankSpan">???</span>`;
-  });
-
-  document.getElementById('quizCard').innerHTML = `
-    <div class="card-word">#${s.number || '?'} ${getSRBadge(s.sid)}</div>
-    <div class="card-ja">${s.ja}</div>
-    <div class="card-en">${enDisplay}</div>
-    ${!isAnswered ? `
-      <div class="input-row">
-        <input type="text" id="answerInput" placeholder="英単語を入力..." autocapitalize="off" autocorrect="off">
-        <button onclick="checkAnswer()">確認</button>
-      </div>
-      <button class="reveal-btn" onclick="revealAnswer()">答えを見る</button>
-    ` : `
+  if (showingAnswer) {
+    const enRevealed = s.en.replace(/\{([^}]+)\}/g, (_, word) => `<span class="blank revealed">${word}</span>`);
+    document.getElementById('quizCard').innerHTML = `
+      <div class="card-word">#${s.number || '?'} ${getSRBadge(s.sid)}</div>
+      <div class="card-ja">${s.ja}</div>
+      <div class="card-en">${enRevealed}</div>
+      ${s.note ? `<div class="card-note">${s.note}</div>` : ''}
       <div class="rating-row">
         <button class="rating-btn got ${rating===1?'selected':''}" onclick="rate('${s.sid}',1)">&#x2705; 得意</button>
         <button class="rating-btn ok ${rating===2?'selected':''}" onclick="rate('${s.sid}',2)">&#x1F7E1; 普通</button>
         <button class="rating-btn hard ${rating===3?'selected':''}" onclick="rate('${s.sid}',3)">&#x274C; 苦手</button>
       </div>
-    `}
-  `;
+    `;
+  } else {
+    const enBlanked = s.en.replace(/\{([^}]+)\}/g, () => `<span class="blank">???</span>`);
+    document.getElementById('quizCard').innerHTML = `
+      <div class="card-word">#${s.number || '?'} ${getSRBadge(s.sid)}</div>
+      <div class="card-ja">${s.ja}</div>
+      <div class="card-en">${enBlanked}</div>
+    `;
+  }
 
   const pct = ((currentOrderIndex + 1) / allSentences.length * 100).toFixed(0);
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('progressText').textContent = `${currentOrderIndex + 1} / ${allSentences.length}`;
   document.getElementById('prevBtn').disabled = currentOrderIndex === 0;
-  document.getElementById('nextBtn').disabled = currentOrderIndex === allSentences.length - 1;
-
-  if (!isAnswered) {
-    const inp = document.getElementById('answerInput');
-    if (inp) {
-      inp.focus();
-      inp.addEventListener('keydown', e => { if(e.key==='Enter') checkAnswer(); });
-    }
-  }
-}
-
-function checkAnswer() {
-  const inp = document.getElementById('answerInput');
-  if (!inp) return;
-  const s = allSentences[getCurrentIndex()];
-  const userAns = inp.value.trim().toLowerCase();
-  const correct = s.answer.toLowerCase();
-
-  if (userAns === correct) {
-    answered[s.sid] = true;
-    updateStreak();
-    showToast('正解！');
-  } else {
-    const blankEl = document.getElementById('blankSpan');
-    if (blankEl) blankEl.classList.add('wrong');
-    showToast('もう一度！');
-    inp.value = '';
-    inp.focus();
-    return;
-  }
-  saveState();
-  renderQuiz();
-}
-
-function revealAnswer() {
-  const s = allSentences[getCurrentIndex()];
-  answered[s.sid] = true;
-  updateStreak();
-  saveState();
-  renderQuiz();
+  document.getElementById('nextBtn').textContent = showingAnswer ? '次へ ▶' : '答え ▶';
+  document.getElementById('nextBtn').disabled = false;
 }
 
 function rate(sid, level) {
@@ -473,7 +435,23 @@ function rate(sid, level) {
 }
 
 function navigate(dir) {
-  currentOrderIndex = Math.max(0, Math.min(allSentences.length - 1, currentOrderIndex + dir));
+  if (dir === 1) {
+    if (!showingAnswer) {
+      showingAnswer = true;
+    } else {
+      showingAnswer = false;
+      if (currentOrderIndex < allSentences.length - 1) currentOrderIndex++;
+    }
+  } else {
+    if (showingAnswer) {
+      showingAnswer = false;
+    } else {
+      if (currentOrderIndex > 0) {
+        currentOrderIndex--;
+        showingAnswer = true;
+      }
+    }
+  }
   saveState();
   renderQuiz();
 }
