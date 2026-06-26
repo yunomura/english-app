@@ -2,242 +2,183 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#f97316">
 <link rel="manifest" href="manifest.json">
 <title>英単語マスター</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-:root {
-  --orange: #f97316; --orange-light: #fff7ed; --orange-dark: #ea580c;
-  --green: #22c55e; --yellow: #eab308; --red: #ef4444;
-  --gray: #6b7280; --gray-light: #f3f4f6; --bg: #fafafa;
-}
-body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: var(--bg); color: #1f2937; min-height: 100dvh; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--o:#f97316;--ol:#fff7ed;--od:#ea580c;--g:#22c55e;--y:#eab308;--r:#ef4444;--gr:#9ca3af;--grl:#f3f4f6;--bg:#f5f5f5}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,'Hiragino Sans','Noto Sans JP',sans-serif;background:var(--bg);color:#1a1a1a;display:flex;flex-direction:column}
 
 /* Header */
-.header { background: var(--orange); color: white; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-.header h1 { font-size: 18px; font-weight: 700; }
-.header-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 4px 8px; }
-.header-btn.active-mode { background: rgba(255,255,255,0.25); border-radius: 8px; }
+.hd{background:linear-gradient(135deg,#f97316,#fb923c);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.hd h1{font-size:20px;font-weight:800;letter-spacing:0.5px}
+.hd-r{display:flex;gap:4px}
+.hd-b{background:rgba(255,255,255,0.15);border:none;color:#fff;width:40px;height:40px;border-radius:12px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.hd-b.on{background:rgba(255,255,255,0.35)}
 
-/* Nav tabs */
-.tabs { display: flex; background: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 48px; z-index: 99; }
-.tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; color: var(--gray); border-bottom: 2px solid transparent; cursor: pointer; }
-.tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+/* Tabs */
+.tabs{display:flex;background:#fff;border-bottom:1px solid #e5e7eb;flex-shrink:0}
+.tab{flex:1;padding:12px 0;text-align:center;font-size:14px;font-weight:700;color:var(--gr);border-bottom:3px solid transparent;cursor:pointer;transition:all 0.2s}
+.tab.on{color:var(--o);border-bottom-color:var(--o)}
+
+/* Main scroll area */
+.main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 
 /* Views */
-.view { display: none; }
-.view.active { display: block; }
+.vw{display:none}.vw.on{display:flex;flex-direction:column;min-height:100%}
 
-/* Quiz view */
-.quiz-container { padding: 16px; max-width: 600px; margin: 0 auto; }
-.progress-bar { background: var(--gray-light); border-radius: 8px; height: 6px; margin-bottom: 12px; overflow: hidden; }
-.progress-fill { background: var(--orange); height: 100%; transition: width 0.3s; border-radius: 8px; }
-.progress-text { font-size: 12px; color: var(--gray); text-align: center; margin-bottom: 16px; }
+/* Quiz */
+.quiz{padding:20px;display:flex;flex-direction:column;gap:16px;flex:1}
+.today{text-align:center;font-size:13px;color:var(--gr);padding:4px 0}
+.today b{color:var(--o);font-size:18px;margin:0 4px}
+.prog{display:flex;align-items:center;gap:10px}
+.prog-bar{flex:1;background:#e5e7eb;border-radius:99px;height:5px;overflow:hidden}
+.prog-fill{background:var(--o);height:100%;border-radius:99px;transition:width 0.3s}
+.prog-txt{font-size:12px;color:var(--gr);font-weight:600;white-space:nowrap}
 
-.card { background: white; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 28px 24px; margin-bottom: 16px; }
-.card-word { font-size: 13px; color: var(--orange); font-weight: 700; margin-bottom: 8px; }
-.card-category { font-size: 11px; color: var(--gray); background: var(--gray-light); display: inline-block; padding: 2px 8px; border-radius: 10px; margin-bottom: 12px; }
-.card-ja { font-size: 18px; margin-bottom: 20px; line-height: 1.7; }
-.card-note { background: var(--orange-light); border-left: 3px solid var(--orange); border-radius: 6px; padding: 12px 14px; font-size: 14px; color: #92400e; line-height: 1.6; margin-bottom: 20px; }
-.card-en { font-size: 20px; line-height: 1.8; margin-bottom: 20px; min-height: 60px; }
-.blank { display: inline-block; min-width: 80px; border-bottom: 3px solid var(--orange); text-align: center; color: var(--orange); font-weight: 700; padding: 4px 6px; transition: all 0.3s; }
-.blank.revealed { background: var(--orange-light); border-radius: 4px; border-bottom-color: var(--green); color: var(--green); }
-.blank.wrong { border-bottom-color: var(--red); }
+.card{background:#fff;border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,0.06);padding:28px 24px;flex:1;display:flex;flex-direction:column;justify-content:center;min-height:200px}
+.card-num{font-size:13px;color:var(--o);font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:6px}
+.sr-tag{font-size:10px;background:#fef2f2;color:var(--r);padding:2px 8px;border-radius:6px;font-weight:600}
+.card-ja{font-size:20px;line-height:1.8;margin-bottom:20px;font-weight:500}
+.card-en{font-size:22px;line-height:1.9;margin-bottom:8px}
+.bl{display:inline-block;min-width:60px;border-bottom:3px solid var(--o);color:var(--o);text-align:center;font-weight:800;padding:2px 8px;margin:0 2px;font-size:20px}
+.bl.ok{background:var(--ol);border-radius:6px;border-bottom-color:var(--g);color:var(--g)}
+.card-note{background:var(--ol);border-radius:12px;padding:14px 16px;font-size:15px;color:#92400e;line-height:1.6;margin-top:16px}
+.rate{display:flex;gap:10px;margin-top:20px}
+.rate-b{flex:1;padding:14px 0;border:2.5px solid #e5e7eb;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;background:#fff;text-align:center;transition:all 0.15s;-webkit-user-select:none}
+.rate-b:active{transform:scale(0.93)}
+.rate-b.g{border-color:var(--g);color:var(--g)}
+.rate-b.y{border-color:var(--y);color:#a16207}
+.rate-b.rd{border-color:var(--r);color:var(--r)}
+.rate-b.sel{color:#fff}
+.rate-b.g.sel{background:var(--g)}.rate-b.y.sel{background:var(--y)}.rate-b.rd.sel{background:var(--r)}
 
-.input-row { display: flex; gap: 8px; margin-bottom: 16px; }
-.input-row input { flex: 1; padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; outline: none; }
-.input-row input:focus { border-color: var(--orange); }
-.input-row button { padding: 12px 20px; background: var(--orange); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; white-space: nowrap; }
+.nav{display:flex;gap:10px;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0)}
+.nav-b{flex:1;padding:16px;border:none;border-radius:14px;font-size:17px;cursor:pointer;font-weight:700;transition:all 0.15s}
+.nav-b:active{transform:scale(0.96)}
+.nav-p{background:#e5e7eb;color:#6b7280}
+.nav-n{background:var(--o);color:#fff;box-shadow:0 4px 12px rgba(249,115,22,0.3)}
+.nav-b:disabled{opacity:0.35;transform:none}
 
-.reveal-btn { width: 100%; padding: 12px; background: var(--gray-light); color: var(--gray); border: none; border-radius: 12px; font-size: 14px; cursor: pointer; margin-bottom: 16px; }
+/* List */
+.lst{padding:20px;overflow-y:auto}
+.flt{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.flt::-webkit-scrollbar{display:none}
+.flt-b{padding:8px 18px;border-radius:99px;border:2px solid #e5e7eb;font-size:14px;font-weight:700;cursor:pointer;background:#fff;white-space:nowrap}
+.flt-b.on{background:var(--o);color:#fff;border-color:var(--o)}
+.li{background:#fff;border-radius:14px;padding:16px 18px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,0.04);cursor:pointer}
+.li:active{background:var(--ol)}
+.li-n{font-size:12px;color:var(--gr)}
+.li-w{font-size:18px;font-weight:700;margin-top:2px}
+.bdg{font-size:12px;padding:4px 12px;border-radius:99px;font-weight:700}
+.bdg-g{background:#dcfce7;color:#166534}.bdg-y{background:#fef9c3;color:#854d0e}
+.bdg-r{background:#fee2e2;color:#991b1b}.bdg-n{background:var(--grl);color:var(--gr)}
 
-.rating-row { display: flex; gap: 8px; }
-.rating-btn { flex: 1; padding: 14px 8px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background: white; text-align: center; transition: all 0.2s; }
-.rating-btn.got { border-color: var(--green); color: var(--green); }
-.rating-btn.ok { border-color: var(--yellow); color: #a16207; }
-.rating-btn.hard { border-color: var(--red); color: var(--red); }
-.rating-btn:active { transform: scale(0.95); }
-.rating-btn.selected { color: white; }
-.rating-btn.got.selected { background: var(--green); }
-.rating-btn.ok.selected { background: var(--yellow); }
-.rating-btn.hard.selected { background: var(--red); }
+/* Stats */
+.sts{padding:20px;overflow-y:auto}
+.sc{background:#fff;border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,0.04)}
+.sc h3{font-size:14px;color:var(--gr);margin-bottom:10px;font-weight:600}
+.sc-big{text-align:center;font-size:44px;font-weight:900;color:var(--o)}
+.sc-lbl{text-align:center;font-size:14px;color:var(--gr);margin-top:4px}
+.sc-row{display:flex;justify-content:space-around;text-align:center}
+.sc-num{font-size:32px;font-weight:900}
+.sc-sm{font-size:12px;color:var(--gr);margin-top:2px}
+.c-g{color:var(--g)}.c-y{color:#a16207}.c-r{color:var(--r)}
+.tip{background:var(--ol);border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.7;margin-top:8px}
+.tip b{color:var(--od)}
 
-.nav-row { display: flex; gap: 8px; margin-top: 12px; }
-.nav-btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; font-weight: 600; }
-.nav-prev { background: var(--gray-light); color: var(--gray); }
-.nav-next { background: var(--orange); color: white; }
-.nav-btn:disabled { opacity: 0.4; }
+/* Import */
+.imp{padding:20px;overflow-y:auto}
+.imp-c{background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,0.04)}
+.imp-c h3{font-size:18px;margin-bottom:6px}.imp-c p{color:var(--gr);font-size:14px;margin-bottom:16px;line-height:1.5}
+.fg{margin-bottom:12px;text-align:left}
+.fg label{font-size:13px;color:var(--gr);display:block;margin-bottom:4px;font-weight:600}
+.fg input,.fg textarea{width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:12px;font-size:16px;font-family:inherit}
+.fg input:focus,.fg textarea:focus{border-color:var(--o);outline:none}
+.fg textarea{height:70px;resize:vertical}
+.ab{width:100%;padding:14px;background:var(--o);color:#fff;border:none;border-radius:14px;font-weight:700;font-size:16px;cursor:pointer;margin-top:8px}
+.ab:active{background:var(--od)}
 
-/* List view */
-.list-container { padding: 16px; max-width: 600px; margin: 0 auto; }
-.filter-row { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
-.filter-btn { padding: 6px 14px; border-radius: 20px; border: 1.5px solid #e5e7eb; font-size: 12px; font-weight: 600; cursor: pointer; background: white; }
-.filter-btn.active { background: var(--orange); color: white; border-color: var(--orange); }
-.list-item { background: white; border-radius: 12px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 4px rgba(0,0,0,0.04); cursor: pointer; }
-.list-item-left { flex: 1; }
-.list-item-num { font-size: 11px; color: var(--gray); }
-.list-item-word { font-size: 16px; font-weight: 700; }
-.list-item-cat { font-size: 11px; color: var(--gray); }
-.badge { font-size: 11px; padding: 3px 10px; border-radius: 10px; font-weight: 600; }
-.badge-got { background: #dcfce7; color: #166534; }
-.badge-ok { background: #fef9c3; color: #854d0e; }
-.badge-hard { background: #fee2e2; color: #991b1b; }
-.badge-none { background: var(--gray-light); color: var(--gray); }
-
-/* Stats view */
-.stats-container { padding: 16px; max-width: 600px; margin: 0 auto; }
-.stat-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
-.stat-card h3 { font-size: 14px; color: var(--gray); margin-bottom: 12px; }
-.stat-row { display: flex; justify-content: space-around; text-align: center; }
-.stat-num { font-size: 28px; font-weight: 800; }
-.stat-label { font-size: 11px; color: var(--gray); margin-top: 2px; }
-.stat-green { color: var(--green); }
-.stat-yellow { color: #a16207; }
-.stat-red { color: var(--red); }
-.streak-info { text-align: center; margin-top: 8px; }
-.streak-num { font-size: 36px; font-weight: 800; color: var(--orange); }
-.streak-label { font-size: 13px; color: var(--gray); }
-.tip-box { background: var(--orange-light); border-left: 4px solid var(--orange); border-radius: 8px; padding: 12px 16px; margin-top: 12px; font-size: 13px; line-height: 1.6; }
-.tip-title { font-weight: 700; color: var(--orange-dark); margin-bottom: 4px; }
-
-/* Import view */
-.import-container { padding: 16px; max-width: 600px; margin: 0 auto; }
-.import-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); text-align: center; }
-.import-card h3 { margin-bottom: 8px; }
-.import-card p { color: var(--gray); font-size: 13px; margin-bottom: 16px; line-height: 1.5; }
-.import-area { border: 2px dashed #d1d5db; border-radius: 12px; padding: 24px; margin-bottom: 16px; cursor: pointer; }
-.import-area:active { border-color: var(--orange); background: var(--orange-light); }
-.import-icon { font-size: 40px; margin-bottom: 8px; }
-.import-label { font-size: 14px; color: var(--gray); }
-.manual-add { margin-top: 16px; }
-.manual-add h4 { text-align: left; margin-bottom: 8px; font-size: 14px; }
-.form-group { margin-bottom: 10px; text-align: left; }
-.form-group label { font-size: 12px; color: var(--gray); display: block; margin-bottom: 4px; }
-.form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 14px; font-family: inherit; }
-.form-group textarea { height: 60px; resize: vertical; }
-.add-btn { width: 100%; padding: 12px; background: var(--orange); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px; }
-.add-btn:active { background: var(--orange-dark); }
-
-/* Jump modal */
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
-.modal-overlay.show { display: flex; }
-.modal { background: white; border-radius: 16px; padding: 24px; width: 100%; max-width: 400px; max-height: 70vh; overflow-y: auto; }
-.modal h3 { margin-bottom: 12px; }
-.modal-close { float: right; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--gray); }
-.jump-list { list-style: none; }
-.jump-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-.jump-item:active, .jump-item:hover { background: var(--orange-light); }
-.jump-item-word { font-weight: 600; }
-.jump-item-num { font-size: 12px; color: var(--gray); }
-.jump-cat-header { font-size: 12px; font-weight: 700; color: var(--orange); padding: 8px 12px 4px; border-bottom: 1px solid var(--gray-light); margin-top: 8px; }
+/* Modal */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center}
+.mo.on{display:flex}
+.mo-c{background:#fff;border-radius:20px 20px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0));width:100%;max-height:75vh;overflow-y:auto;animation:slideUp 0.25s ease-out}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mo-c h3{font-size:18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.mo-x{background:var(--grl);border:none;width:32px;height:32px;border-radius:99px;font-size:18px;cursor:pointer;color:var(--gr);display:flex;align-items:center;justify-content:center}
+.jc{font-size:13px;font-weight:700;color:var(--o);padding:10px 0 6px;border-bottom:1px solid var(--grl);margin-top:6px}
+.ji{padding:14px 8px;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:16px}
+.ji:active{background:var(--ol)}
+.ji-w{font-weight:600}.ji-n{font-size:13px;color:var(--gr)}
 
 /* Toast */
-.toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; z-index: 300; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
-.toast.show { opacity: 1; }
-
-/* Spaced repetition badge */
-.sr-badge { font-size: 10px; background: #ede9fe; color: #7c3aed; padding: 2px 8px; border-radius: 8px; margin-left: 6px; }
-
-/* Today's activity */
-.today-bar { background: white; padding: 8px 16px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; color: var(--gray); border-bottom: 1px solid #e5e7eb; }
-.today-count { font-weight: 800; color: var(--orange); font-size: 16px; }
-.today-goal { font-size: 11px; }
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:12px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.toast.on{opacity:1}
 </style>
 </head>
 <body>
 
-<div class="header">
+<div class="hd">
   <h1>英単語マスター</h1>
-  <div>
-    <button class="header-btn" id="shuffleBtn" onclick="toggleShuffle()" title="シャッフル">&#x1F500;</button>
-    <button class="header-btn" onclick="openJumpModal()" title="ジャンプ">&#x1F50D;</button>
+  <div class="hd-r">
+    <button class="hd-b" id="shuffleBtn" onclick="toggleShuffle()">&#x1F500;</button>
+    <button class="hd-b" onclick="openJump()">&#x1F50D;</button>
   </div>
 </div>
 
 <div class="tabs">
-  <div class="tab active" data-view="quiz">クイズ</div>
-  <div class="tab" data-view="list">単語一覧</div>
-  <div class="tab" data-view="stats">統計</div>
-  <div class="tab" data-view="import">追加</div>
+  <div class="tab on" data-v="quiz">クイズ</div>
+  <div class="tab" data-v="list">一覧</div>
+  <div class="tab" data-v="stats">統計</div>
+  <div class="tab" data-v="imp">追加</div>
 </div>
 
-<!-- Quiz View -->
-<div id="quiz" class="view active">
-  <div class="quiz-container">
-    <div class="today-bar">今日の学習: <span class="today-count" id="todayCount">0</span> 枚 <span class="today-goal" id="todayGoal"></span></div>
-    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-    <div class="progress-text" id="progressText"></div>
-    <div class="card" id="quizCard"></div>
-    <div class="nav-row">
-      <button class="nav-btn nav-prev" id="prevBtn" onclick="navigate(-1)">&#9664; 前へ</button>
-      <button class="nav-btn nav-next" id="nextBtn" onclick="navigate(1)">次へ &#9654;</button>
+<div class="main">
+  <div id="quiz" class="vw on">
+    <div class="quiz">
+      <div class="today">今日 <b id="tCnt">0</b> 枚 <span id="tGoal"></span></div>
+      <div class="prog"><div class="prog-bar"><div class="prog-fill" id="pFill"></div></div><div class="prog-txt" id="pTxt"></div></div>
+      <div class="card" id="qCard"></div>
+      <div class="nav">
+        <button class="nav-b nav-p" id="prevB" onclick="nav(-1)">&#9664; 前へ</button>
+        <button class="nav-b nav-n" id="nextB" onclick="nav(1)">答え &#9654;</button>
+      </div>
     </div>
   </div>
-</div>
-
-<!-- List View -->
-<div id="list" class="view">
-  <div class="list-container">
-    <div class="filter-row" id="filterRow"></div>
-    <div id="wordList"></div>
-  </div>
-</div>
-
-<!-- Stats View -->
-<div id="stats" class="view">
-  <div class="stats-container" id="statsContent"></div>
-</div>
-
-<!-- Import View -->
-<div id="import" class="view">
-  <div class="import-container">
-    <div class="import-card">
-      <h3>例文を追加</h3>
-      <p>写真から読み取った例文を手動で追加できます。<br>単語帳の新しいページを追加していきましょう！</p>
-      <div class="manual-add">
-        <h4>新しい例文を追加</h4>
-        <div class="form-group">
-          <label>英単語</label>
-          <input type="text" id="addWord" placeholder="例: beautiful">
+  <div id="list" class="vw"><div class="lst"><div class="flt" id="fltR"></div><div id="wList"></div></div></div>
+  <div id="stats" class="vw"><div class="sts" id="stsC"></div></div>
+  <div id="imp" class="vw">
+    <div class="imp">
+      <div class="imp-c">
+        <h3>例文を追加</h3>
+        <p>単語帳の新しいページを追加しましょう</p>
+        <div class="fg"><label>英単語</label><input type="text" id="aW" placeholder="例: beautiful"></div>
+        <div class="fg"><label>カテゴリ</label><input type="text" id="aCat" placeholder="例: いい"></div>
+        <div class="fg"><label>日本語文</label><textarea id="aJa" placeholder="例: その景色は美しかった。"></textarea></div>
+        <div class="fg"><label>英語文（{中括弧}で空欄指定）</label><textarea id="aEn" placeholder="例: The scenery was {beautiful}."></textarea></div>
+        <button class="ab" onclick="addS()">追加する</button>
+        <div style="margin-top:20px;border-top:1px solid #e5e7eb;padding-top:20px">
+          <div class="fg"><label>一括インポート (JSON)</label><textarea id="bJson" style="font-family:monospace;font-size:13px" placeholder='[{"word":"...","category":"...","sentences":[...]}]'></textarea></div>
+          <button class="ab" onclick="bulkImp()" style="background:#6b7280">一括追加</button>
         </div>
-        <div class="form-group">
-          <label>カテゴリ</label>
-          <input type="text" id="addCategory" placeholder="例: いい">
-        </div>
-        <div class="form-group">
-          <label>日本語文</label>
-          <textarea id="addJa" placeholder="例: その景色は美しかった。"></textarea>
-        </div>
-        <div class="form-group">
-          <label>英語文（空欄にする単語を {中括弧} で囲む）</label>
-          <textarea id="addEn" placeholder="例: The scenery was {beautiful}."></textarea>
-        </div>
-        <button class="add-btn" onclick="addSentence()">追加する</button>
-        <div style="margin-top:16px; border-top: 1px solid #e5e7eb; padding-top:16px;">
-          <h4>一括インポート (JSON)</h4>
-          <p style="font-size:12px;color:var(--gray);margin-bottom:8px;">data.jsの形式でJSONを貼り付け</p>
-          <textarea id="bulkJson" style="width:100%;height:100px;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:12px;font-family:monospace;" placeholder='[{"word":"beautiful","category":"いい","sentences":[{"ja":"...","en":"... {beautiful} ..."}]}]'></textarea>
-          <button class="add-btn" onclick="bulkImport()" style="margin-top:8px;background:#6b7280;">一括追加</button>
-        </div>
-        <div style="margin-top:16px; border-top: 1px solid #e5e7eb; padding-top:16px;">
-          <h4>データ管理</h4>
-          <button class="add-btn" onclick="exportData()" style="background:#6b7280;margin-bottom:8px;">データをエクスポート</button>
-          <button class="add-btn" onclick="if(confirm('カスタム追加した例文を全削除しますか？'))resetCustomData()" style="background:var(--red);">カスタムデータをリセット</button>
+        <div style="margin-top:20px;border-top:1px solid #e5e7eb;padding-top:20px">
+          <button class="ab" onclick="expData()" style="background:#6b7280;margin-bottom:10px">エクスポート</button>
+          <button class="ab" onclick="if(confirm('カスタムデータを全削除？'))rstData()" style="background:var(--r)">リセット</button>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Jump Modal -->
-<div class="modal-overlay" id="jumpModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeJumpModal()">&times;</button>
-    <h3>単語にジャンプ</h3>
-    <div id="jumpList"></div>
+<div class="mo" id="jModal">
+  <div class="mo-c">
+    <h3>ジャンプ <button class="mo-x" onclick="closeJump()">&times;</button></h3>
+    <div id="jList"></div>
   </div>
 </div>
 
@@ -245,453 +186,173 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: var(
 
 <script src="data.js"></script>
 <script>
-// State
-let allSentences = [];
-let displayOrder = [];
-let currentOrderIndex = 0;
-let ratings = {};
-let answered = {};
-let streak = 0;
-let lastStudyDate = null;
-let customWords = [];
-let shuffleMode = false;
-let todayViewed = {};
-let todayViewedDate = null;
-let showingAnswer = false;
+let S=[],D=[],ci=0,rat={},str=0,lastD=null,cw=[],shuf=false,tv={},tvD=null,showA=false;
 
-function init() {
-  loadState();
-  buildSentenceList();
-  buildDisplayOrder();
-  restorePosition();
-  renderQuiz();
-  renderList();
-  renderStats();
-  setupTabs();
-  updateShuffleBtn();
+function init(){load();buildS();buildD();if(ci>=S.length)ci=0;rQ();rL();rSt();tabs();updSB()}
+
+function load(){try{
+  rat=JSON.parse(localStorage.getItem('em_ratings')||'{}');
+  ci=parseInt(localStorage.getItem('em_position')||'0');
+  str=parseInt(localStorage.getItem('em_streak')||'0');
+  lastD=localStorage.getItem('em_lastDate');
+  cw=JSON.parse(localStorage.getItem('em_custom')||'[]');
+  shuf=localStorage.getItem('em_shuffle')==='true';
+  tvD=localStorage.getItem('em_tvDate');
+  tv=JSON.parse(localStorage.getItem('em_tvSet')||'{}');
+  const t=new Date().toISOString().slice(0,10);
+  if(tvD!==t){tv={};tvD=t}
+}catch(e){console.error(e)}}
+
+function save(){
+  localStorage.setItem('em_ratings',JSON.stringify(rat));
+  localStorage.setItem('em_position',ci.toString());
+  localStorage.setItem('em_streak',str.toString());
+  localStorage.setItem('em_lastDate',lastD);
+  localStorage.setItem('em_custom',JSON.stringify(cw));
+  localStorage.setItem('em_shuffle',shuf.toString());
+  localStorage.setItem('em_tvDate',tvD);
+  localStorage.setItem('em_tvSet',JSON.stringify(tv));
 }
 
-function loadState() {
-  try {
-    ratings = JSON.parse(localStorage.getItem('em_ratings') || '{}');
-    answered = JSON.parse(localStorage.getItem('em_answered') || '{}');
-    currentOrderIndex = parseInt(localStorage.getItem('em_position') || '0');
-    streak = parseInt(localStorage.getItem('em_streak') || '0');
-    lastStudyDate = localStorage.getItem('em_lastDate');
-    customWords = JSON.parse(localStorage.getItem('em_custom') || '[]');
-    shuffleMode = localStorage.getItem('em_shuffle') === 'true';
-    todayViewedDate = localStorage.getItem('em_tvDate');
-    todayViewed = JSON.parse(localStorage.getItem('em_tvSet') || '{}');
-    const today = new Date().toISOString().slice(0,10);
-    if (todayViewedDate !== today) { todayViewed = {}; todayViewedDate = today; }
-  } catch(e) { console.error(e); }
-}
-
-function saveState() {
-  localStorage.setItem('em_ratings', JSON.stringify(ratings));
-  localStorage.setItem('em_answered', JSON.stringify(answered));
-  localStorage.setItem('em_position', currentOrderIndex.toString());
-  localStorage.setItem('em_streak', streak.toString());
-  localStorage.setItem('em_lastDate', lastStudyDate);
-  localStorage.setItem('em_custom', JSON.stringify(customWords));
-  localStorage.setItem('em_shuffle', shuffleMode.toString());
-  localStorage.setItem('em_tvDate', todayViewedDate);
-  localStorage.setItem('em_tvSet', JSON.stringify(todayViewed));
-}
-
-function buildSentenceList() {
-  allSentences = [];
-  const allWords = [...WORD_DATA, ...customWords];
-  allWords.forEach(w => {
-    w.sentences.forEach((s, si) => {
-      const sid = `${w.number || 'c'+w.id}_${si}`;
-      const blanks = [];
-      s.en.replace(/\{([^}]+)\}/g, (_, word) => { blanks.push(word); });
-      const answer = blanks.join(' ');
-      allSentences.push({
-        sid, word: w.word, number: w.number || '', category: w.category || '',
-        ja: s.ja, en: s.en, answer, note: s.note || ''
-      });
+function buildS(){
+  S=[];
+  [...WORD_DATA,...cw].forEach(w=>{
+    w.sentences.forEach((s,si)=>{
+      const sid=`${w.number||'c'+w.id}_${si}`;
+      S.push({sid,word:w.word,num:w.number||'',cat:w.category||'',ja:s.ja,en:s.en,note:s.note||''});
     });
   });
 }
 
-function extractBlank(en) {
-  const m = en.match(/\{([^}]+)\}/);
-  return m ? m[1] : '';
+function buildD(){
+  D=S.map((_,i)=>i);
+  if(shuf)for(let i=D.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[D[i],D[j]]=[D[j],D[i]]}
 }
 
-function buildDisplayOrder() {
-  displayOrder = allSentences.map((_, i) => i);
-  if (shuffleMode) {
-    for (let i = displayOrder.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [displayOrder[i], displayOrder[j]] = [displayOrder[j], displayOrder[i]];
-    }
-  }
+function gci(){return D[ci]||0}
+
+function updStreak(){
+  const t=new Date().toISOString().slice(0,10);
+  if(lastD!==t){const y=new Date(Date.now()-864e5).toISOString().slice(0,10);str=(lastD===y)?str+1:1;lastD=t;save()}
 }
 
-function getCurrentIndex() {
-  return displayOrder[currentOrderIndex] || 0;
+function trackV(sid){
+  const t=new Date().toISOString().slice(0,10);
+  if(tvD!==t){tv={};tvD=t}
+  tv[sid]=true;updStreak();save();
+  const c=Object.keys(tv).length;
+  const el=document.getElementById('tCnt'),gl=document.getElementById('tGoal');
+  if(el)el.textContent=c;
+  if(gl)gl.textContent=c>=30?'🔥 絶好調':c>=20?'✨ いい調子':c>=10?'👍 順調':'';
 }
 
-function restorePosition() {
-  if (currentOrderIndex >= allSentences.length) currentOrderIndex = 0;
-}
-
-function toggleShuffle() {
-  shuffleMode = !shuffleMode;
-  currentOrderIndex = 0;
-  buildDisplayOrder();
-  saveState();
-  updateShuffleBtn();
-  renderQuiz();
-  showToast(shuffleMode ? 'シャッフルON' : '順番通り');
-}
-
-function updateShuffleBtn() {
-  const btn = document.getElementById('shuffleBtn');
-  if (btn) btn.classList.toggle('active-mode', shuffleMode);
-}
-
-function updateStreak() {
-  const today = new Date().toISOString().slice(0,10);
-  if (lastStudyDate !== today) {
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
-    streak = (lastStudyDate === yesterday) ? streak + 1 : 1;
-    lastStudyDate = today;
-    saveState();
-  }
-}
-
-// Quiz
-function trackView(sid) {
-  const today = new Date().toISOString().slice(0,10);
-  if (todayViewedDate !== today) { todayViewed = {}; todayViewedDate = today; }
-  todayViewed[sid] = true;
-  updateStreak();
-  saveState();
-  updateTodayBar();
-}
-
-function updateTodayBar() {
-  const count = Object.keys(todayViewed).length;
-  const el = document.getElementById('todayCount');
-  const goal = document.getElementById('todayGoal');
-  if (el) el.textContent = count;
-  if (goal) {
-    if (count >= 30) goal.textContent = '🔥 すごい！絶好調！';
-    else if (count >= 20) goal.textContent = '✨ いい調子！';
-    else if (count >= 10) goal.textContent = '👍 順調！';
-    else goal.textContent = '（目標: 10枚）';
-  }
-}
-
-function renderQuiz() {
-  if (allSentences.length === 0) return;
-  const ci = getCurrentIndex();
-  const s = allSentences[ci];
-  const rating = ratings[s.sid];
-
-  trackView(s.sid);
-
-  if (showingAnswer) {
-    const enRevealed = s.en.replace(/\{([^}]+)\}/g, (_, word) => `<span class="blank revealed">${word}</span>`);
-    document.getElementById('quizCard').innerHTML = `
-      <div class="card-word">#${s.number || '?'} ${getSRBadge(s.sid)}</div>
+function rQ(){
+  if(!S.length)return;
+  const s=S[gci()],r=rat[s.sid];
+  trackV(s.sid);
+  const q=document.getElementById('qCard');
+  if(showA){
+    q.innerHTML=`<div class="card-num">#${s.num}${r===3?' <span class="sr-tag">要復習</span>':''}</div>
       <div class="card-ja">${s.ja}</div>
-      <div class="card-en">${enRevealed}</div>
-      ${s.note ? `<div class="card-note">${s.note}</div>` : ''}
-      <div class="rating-row">
-        <button class="rating-btn got ${rating===1?'selected':''}" onclick="rate('${s.sid}',1)">&#x2705; 得意</button>
-        <button class="rating-btn ok ${rating===2?'selected':''}" onclick="rate('${s.sid}',2)">&#x1F7E1; 普通</button>
-        <button class="rating-btn hard ${rating===3?'selected':''}" onclick="rate('${s.sid}',3)">&#x274C; 苦手</button>
-      </div>
-    `;
-  } else {
-    const enBlanked = s.en.replace(/\{([^}]+)\}/g, () => `<span class="blank">???</span>`);
-    document.getElementById('quizCard').innerHTML = `
-      <div class="card-word">#${s.number || '?'} ${getSRBadge(s.sid)}</div>
+      <div class="card-en">${s.en.replace(/\{([^}]+)\}/g,(_,w)=>`<span class="bl ok">${w}</span>`)}</div>
+      ${s.note?`<div class="card-note">${s.note}</div>`:''}
+      <div class="rate">
+        <button class="rate-b g${r===1?' sel':''}" onclick="rate('${s.sid}',1)">&#x2705; 得意</button>
+        <button class="rate-b y${r===2?' sel':''}" onclick="rate('${s.sid}',2)">&#x1F7E1; 普通</button>
+        <button class="rate-b rd${r===3?' sel':''}" onclick="rate('${s.sid}',3)">&#x274C; 苦手</button>
+      </div>`;
+  }else{
+    q.innerHTML=`<div class="card-num">#${s.num}${r===3?' <span class="sr-tag">要復習</span>':''}</div>
       <div class="card-ja">${s.ja}</div>
-      <div class="card-en">${enBlanked}</div>
-    `;
+      <div class="card-en">${s.en.replace(/\{([^}]+)\}/g,()=>'<span class="bl">???</span>')}</div>`;
   }
-
-  const pct = ((currentOrderIndex + 1) / allSentences.length * 100).toFixed(0);
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressText').textContent = `${currentOrderIndex + 1} / ${allSentences.length}`;
-  document.getElementById('prevBtn').disabled = currentOrderIndex === 0 && !showingAnswer;
-  document.getElementById('nextBtn').textContent = showingAnswer ? '次へ ▶' : '答え ▶';
-  document.getElementById('nextBtn').disabled = false;
+  const pct=((ci+1)/S.length*100).toFixed(0);
+  document.getElementById('pFill').style.width=pct+'%';
+  document.getElementById('pTxt').textContent=`${ci+1} / ${S.length}`;
+  document.getElementById('prevB').disabled=ci===0&&!showA;
+  document.getElementById('nextB').textContent=showA?'次へ ▶':'答え ▶';
 }
 
-function rate(sid, level) {
-  ratings[sid] = level;
-  saveState();
-  renderQuiz();
-  renderList();
-  renderStats();
+function rate(sid,lv){rat[sid]=lv;save();rQ();rL();rSt()}
+
+function nav(d){
+  if(d===1){if(!showA){showA=true}else{showA=false;ci=(ci+1)%S.length}}
+  else{if(showA){showA=false}else if(ci>0){ci--;showA=true}}
+  save();rQ();
 }
 
-function navigate(dir) {
-  if (dir === 1) {
-    if (!showingAnswer) {
-      showingAnswer = true;
-    } else {
-      showingAnswer = false;
-      currentOrderIndex = (currentOrderIndex + 1) % allSentences.length;
-    }
-  } else {
-    if (showingAnswer) {
-      showingAnswer = false;
-    } else {
-      if (currentOrderIndex > 0) {
-        currentOrderIndex--;
-        showingAnswer = true;
-      }
-    }
-  }
-  saveState();
-  renderQuiz();
-}
+function toggleShuffle(){shuf=!shuf;ci=0;showA=false;buildD();save();updSB();rQ();toast(shuf?'シャッフルON':'順番通り')}
+function updSB(){const b=document.getElementById('shuffleBtn');if(b)b.classList.toggle('on',shuf)}
 
-function getSRBadge(sid) {
-  const r = ratings[sid];
-  if (!r) return '';
-  if (r === 3) return '<span class="sr-badge">要復習</span>';
-  return '';
-}
-
-// List
-function renderList(filter = 'all') {
-  const filters = [
-    { key: 'all', label: '全て' },
-    { key: 'hard', label: '苦手' },
-    { key: 'ok', label: '普通' },
-    { key: 'got', label: '得意' },
-    { key: 'unrated', label: '未評価' },
-  ];
-
-  document.getElementById('filterRow').innerHTML = filters.map(f =>
-    `<button class="filter-btn ${filter===f.key?'active':''}" onclick="renderList('${f.key}')">${f.label}</button>`
-  ).join('');
-
-  let grouped = {};
-  allSentences.forEach((s, i) => {
-    if (!grouped[s.word]) grouped[s.word] = { word: s.word, number: s.number, category: s.category, indices: [], ratings: [] };
-    grouped[s.word].indices.push(i);
-    if (ratings[s.sid]) grouped[s.word].ratings.push(ratings[s.sid]);
-  });
-
-  let words = Object.values(grouped);
-
-  if (filter === 'hard') words = words.filter(w => w.ratings.includes(3));
-  else if (filter === 'ok') words = words.filter(w => w.ratings.includes(2) && !w.ratings.includes(3));
-  else if (filter === 'got') words = words.filter(w => w.ratings.length > 0 && w.ratings.every(r => r === 1));
-  else if (filter === 'unrated') words = words.filter(w => w.ratings.length === 0);
-
-  if (filter === 'hard') words.sort((a,b) => b.ratings.filter(r=>r===3).length - a.ratings.filter(r=>r===3).length);
-
-  document.getElementById('wordList').innerHTML = words.map(w => {
-    const worstRating = Math.max(...w.ratings, 0);
-    let badge = '<span class="badge badge-none">未</span>';
-    if (worstRating === 1) badge = '<span class="badge badge-got">得意</span>';
-    else if (worstRating === 2) badge = '<span class="badge badge-ok">普通</span>';
-    else if (worstRating === 3) badge = '<span class="badge badge-hard">苦手</span>';
-
-    return `<div class="list-item" onclick="jumpTo(${w.indices[0]})">
-      <div class="list-item-left">
-        <div class="list-item-num">#${w.number} <span class="list-item-cat">${w.category}</span></div>
-        <div class="list-item-word">${w.word}</div>
-      </div>
-      ${badge}
-    </div>`;
+function rL(f='all'){
+  const fs=[{k:'all',l:'全て'},{k:'hard',l:'苦手'},{k:'ok',l:'普通'},{k:'got',l:'得意'},{k:'unrated',l:'未評価'}];
+  document.getElementById('fltR').innerHTML=fs.map(x=>`<button class="flt-b${f===x.k?' on':''}" onclick="rL('${x.k}')">${x.l}</button>`).join('');
+  let gr={};
+  S.forEach((s,i)=>{if(!gr[s.word])gr[s.word]={word:s.word,num:s.num,cat:s.cat,idx:[],rats:[]};gr[s.word].idx.push(i);if(rat[s.sid])gr[s.word].rats.push(rat[s.sid])});
+  let ws=Object.values(gr);
+  if(f==='hard')ws=ws.filter(w=>w.rats.includes(3));
+  else if(f==='ok')ws=ws.filter(w=>w.rats.includes(2)&&!w.rats.includes(3));
+  else if(f==='got')ws=ws.filter(w=>w.rats.length>0&&w.rats.every(r=>r===1));
+  else if(f==='unrated')ws=ws.filter(w=>w.rats.length===0);
+  document.getElementById('wList').innerHTML=ws.map(w=>{
+    const mx=Math.max(...w.rats,0);
+    let b='<span class="bdg bdg-n">未</span>';
+    if(mx===1)b='<span class="bdg bdg-g">得意</span>';else if(mx===2)b='<span class="bdg bdg-y">普通</span>';else if(mx===3)b='<span class="bdg bdg-r">苦手</span>';
+    return`<div class="li" onclick="jumpTo(${w.idx[0]})"><div><div class="li-n">#${w.num} ${w.cat}</div><div class="li-w">${w.word}</div></div>${b}</div>`;
   }).join('');
 }
 
-// Stats
-function renderStats() {
-  const total = allSentences.length;
-  const answered_count = Object.keys(answered).length;
-  const got = Object.values(ratings).filter(r => r===1).length;
-  const ok = Object.values(ratings).filter(r => r===2).length;
-  const hard = Object.values(ratings).filter(r => r===3).length;
-  const rated = got + ok + hard;
-
-  const tips = [
-    "苦手な単語は寝る前と朝起きた直後に復習すると定着しやすいです。",
-    "例文を声に出して読むと、リスニング力も同時に鍛えられます。",
-    "1日10〜15分の短い学習を毎日続けることが、一気に1時間やるより効果的です。",
-    "間違えた単語は3回連続で正解するまで繰り返しましょう。",
-    "新しい単語を覚えたら、自分で例文を1つ作ってみると記憶に残りやすいです。",
-  ];
-  const tip = tips[Math.floor(Math.random() * tips.length)];
-
-  const todayCount = Object.keys(todayViewed).length;
-
-  document.getElementById('statsContent').innerHTML = `
-    <div class="stat-card">
-      <h3>今日の学習量</h3>
-      <div class="streak-info">
-        <div class="streak-num">${todayCount}</div>
-        <div class="streak-label">枚表示 ${todayCount >= 30 ? '🔥 絶好調！' : todayCount >= 20 ? '✨ いい調子！' : todayCount >= 10 ? '👍 順調！' : '（目標: 10枚）'}</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <h3>学習ストリーク</h3>
-      <div class="streak-info">
-        <div class="streak-num">${streak}</div>
-        <div class="streak-label">日連続</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <h3>進捗 (${answered_count}/${total} 例文回答済み)</h3>
-      <div class="progress-bar" style="margin:12px 0;height:10px;">
-        <div class="progress-fill" style="width:${total?answered_count/total*100:0}%"></div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <h3>評価内訳 (${rated} 件評価済み)</h3>
-      <div class="stat-row">
-        <div><div class="stat-num stat-green">${got}</div><div class="stat-label">得意</div></div>
-        <div><div class="stat-num stat-yellow">${ok}</div><div class="stat-label">普通</div></div>
-        <div><div class="stat-num stat-red">${hard}</div><div class="stat-label">苦手</div></div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="tip-box">
-        <div class="tip-title">学習アドバイス</div>
-        ${tip}
-      </div>
-    </div>
-  `;
+function rSt(){
+  const tot=S.length,g=Object.values(rat).filter(r=>r===1).length,o=Object.values(rat).filter(r=>r===2).length,h=Object.values(rat).filter(r=>r===3).length,tc=Object.keys(tv).length;
+  const tips=["苦手な単語は寝る前と朝に復習すると定着しやすい","例文を声に出すとリスニング力も鍛えられる","1日10〜15分を毎日が一気に1時間より効果的","間違えた単語は3回連続正解まで繰り返そう","覚えた単語で自分の例文を1つ作ると記憶に残る"];
+  document.getElementById('stsC').innerHTML=`
+    <div class="sc"><h3>今日の学習</h3><div class="sc-big">${tc}</div><div class="sc-lbl">枚表示</div></div>
+    <div class="sc"><h3>連続学習</h3><div class="sc-big">${str}</div><div class="sc-lbl">日連続</div></div>
+    <div class="sc"><h3>評価内訳</h3><div class="sc-row">
+      <div><div class="sc-num c-g">${g}</div><div class="sc-sm">得意</div></div>
+      <div><div class="sc-num c-y">${o}</div><div class="sc-sm">普通</div></div>
+      <div><div class="sc-num c-r">${h}</div><div class="sc-sm">苦手</div></div>
+    </div></div>
+    <div class="sc"><div class="tip"><b>💡 アドバイス</b><br>${tips[Math.floor(Math.random()*tips.length)]}</div></div>`;
 }
 
-// Import
-function addSentence() {
-  const word = document.getElementById('addWord').value.trim();
-  const cat = document.getElementById('addCategory').value.trim();
-  const ja = document.getElementById('addJa').value.trim();
-  const en = document.getElementById('addEn').value.trim();
-
-  if (!word || !ja || !en) { showToast('全項目を入力してください'); return; }
-  if (!en.includes('{')) { showToast('{中括弧}で空欄単語を囲んでください'); return; }
-
-  let existing = customWords.find(w => w.word === word);
-  if (!existing) {
-    existing = { id: Date.now(), word, category: cat, number: 'C' + (customWords.length+1).toString().padStart(3,'0'), sentences: [] };
-    customWords.push(existing);
-  }
-  const blank = extractBlank(en);
-  existing.sentences.push({ ja, en, blank });
-
-  saveState();
-  buildSentenceList();
-  renderList();
-  renderStats();
-
-  document.getElementById('addJa').value = '';
-  document.getElementById('addEn').value = '';
-  showToast(`「${word}」の例文を追加しました`);
+function addS(){
+  const w=document.getElementById('aW').value.trim(),c=document.getElementById('aCat').value.trim(),j=document.getElementById('aJa').value.trim(),e=document.getElementById('aEn').value.trim();
+  if(!w||!j||!e){toast('全項目を入力');return}if(!e.includes('{')){toast('{中括弧}で空欄指定');return}
+  let ex=cw.find(x=>x.word===w);
+  if(!ex){ex={id:Date.now(),word:w,category:c,number:'C'+(cw.length+1).toString().padStart(3,'0'),sentences:[]};cw.push(ex)}
+  ex.sentences.push({ja:j,en:e,note:''});
+  save();buildS();rL();rSt();document.getElementById('aJa').value='';document.getElementById('aEn').value='';toast(`「${w}」追加`);
 }
 
-function bulkImport() {
-  try {
-    const data = JSON.parse(document.getElementById('bulkJson').value);
-    let count = 0;
-    data.forEach(w => {
-      const entry = { id: Date.now() + count, word: w.word, category: w.category || '', number: 'C' + (customWords.length + count + 1).toString().padStart(3,'0'), sentences: [] };
-      w.sentences.forEach(s => {
-        entry.sentences.push({ ja: s.ja, en: s.en, blank: s.blank || extractBlank(s.en) });
-        count++;
-      });
-      customWords.push(entry);
-    });
-    saveState();
-    buildSentenceList();
-    renderList();
-    renderStats();
-    document.getElementById('bulkJson').value = '';
-    showToast(`${count}件の例文を追加しました`);
-  } catch(e) { showToast('JSONの形式が正しくありません'); }
-}
+function bulkImp(){try{
+  const d=JSON.parse(document.getElementById('bJson').value);let n=0;
+  d.forEach(w=>{const e={id:Date.now()+n,word:w.word,category:w.category||'',number:'C'+(cw.length+n+1).toString().padStart(3,'0'),sentences:[]};
+  w.sentences.forEach(s=>{e.sentences.push({ja:s.ja,en:s.en,note:s.note||''});n++});cw.push(e)});
+  save();buildS();rL();rSt();document.getElementById('bJson').value='';toast(`${n}件追加`);
+}catch(e){toast('JSON形式エラー')}}
 
-function exportData() {
-  const data = { ratings, answered, customWords, currentIndex, streak, lastStudyDate };
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'english-master-backup.json';
-  a.click();
-}
+function expData(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({rat,cw,ci,str,lastD},null,2)],{type:'application/json'}));a.download='english-backup.json';a.click()}
+function rstData(){cw=[];localStorage.removeItem('em_custom');buildS();rL();rSt();rQ();toast('リセット完了')}
 
-function resetCustomData() {
-  customWords = [];
-  localStorage.removeItem('em_custom');
-  buildSentenceList();
-  renderList();
-  renderStats();
-  renderQuiz();
-  showToast('カスタムデータをリセットしました');
+function openJump(){
+  let cats={};[...WORD_DATA,...cw].forEach(w=>{if(!cats[w.category])cats[w.category]=[];cats[w.category].push(w)});
+  let h='';Object.entries(cats).forEach(([c,ws])=>{h+=`<div class="jc">${c}</div>`;
+  ws.forEach(w=>{const i=S.findIndex(s=>s.word===w.word);h+=`<div class="ji" onclick="jumpTo(${i});closeJump()"><span class="ji-w">${w.word}</span><span class="ji-n">#${w.number||'?'}</span></div>`})});
+  document.getElementById('jList').innerHTML=h;document.getElementById('jModal').classList.add('on');
 }
+function closeJump(){document.getElementById('jModal').classList.remove('on')}
 
-// Jump
-function openJumpModal() {
-  const modal = document.getElementById('jumpModal');
-  let cats = {};
-  const allWords = [...WORD_DATA, ...customWords];
-  allWords.forEach(w => {
-    if (!cats[w.category]) cats[w.category] = [];
-    cats[w.category].push(w);
-  });
+function jumpTo(i){const oi=D.indexOf(i);ci=oi>=0?oi:0;showA=false;save();document.querySelector('[data-v="quiz"]').click();rQ()}
 
-  let html = '';
-  Object.entries(cats).forEach(([cat, words]) => {
-    html += `<div class="jump-cat-header">${cat}</div>`;
-    words.forEach(w => {
-      const idx = allSentences.findIndex(s => s.word === w.word);
-      html += `<div class="jump-item" onclick="jumpTo(${idx});closeJumpModal()">
-        <span class="jump-item-word">${w.word}</span>
-        <span class="jump-item-num">#${w.number || '?'}</span>
-      </div>`;
-    });
-  });
-  document.getElementById('jumpList').innerHTML = html;
-  modal.classList.add('show');
-}
+function tabs(){document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.vw').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');document.getElementById(t.dataset.v).classList.add('on');
+  if(t.dataset.v==='stats')rSt();if(t.dataset.v==='list')rL();
+}))}
 
-function closeJumpModal() {
-  document.getElementById('jumpModal').classList.remove('show');
-}
-
-function jumpTo(index) {
-  const oi = displayOrder.indexOf(index);
-  currentOrderIndex = oi >= 0 ? oi : 0;
-  saveState();
-  document.querySelector('[data-view="quiz"]').click();
-  renderQuiz();
-}
-
-// Tabs
-function setupTabs() {
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      tab.classList.add('active');
-      document.getElementById(tab.dataset.view).classList.add('active');
-      if (tab.dataset.view === 'stats') renderStats();
-      if (tab.dataset.view === 'list') renderList();
-    });
-  });
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
-}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),1800)}
 
 init();
 </script>
