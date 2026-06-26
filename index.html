@@ -20,6 +20,7 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: var(
 .header { background: var(--orange); color: white; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
 .header h1 { font-size: 18px; font-weight: 700; }
 .header-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 4px 8px; }
+.header-btn.active-mode { background: rgba(255,255,255,0.25); border-radius: 8px; }
 
 /* Nav tabs */
 .tabs { display: flex; background: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 48px; z-index: 99; }
@@ -138,6 +139,11 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: var(
 
 /* Spaced repetition badge */
 .sr-badge { font-size: 10px; background: #ede9fe; color: #7c3aed; padding: 2px 8px; border-radius: 8px; margin-left: 6px; }
+
+/* Today's activity */
+.today-bar { background: white; padding: 8px 16px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; color: var(--gray); border-bottom: 1px solid #e5e7eb; }
+.today-count { font-weight: 800; color: var(--orange); font-size: 16px; }
+.today-goal { font-size: 11px; }
 </style>
 </head>
 <body>
@@ -145,6 +151,7 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: var(
 <div class="header">
   <h1>英単語マスター</h1>
   <div>
+    <button class="header-btn" id="shuffleBtn" onclick="toggleShuffle()" title="シャッフル">&#x1F500;</button>
     <button class="header-btn" onclick="openJumpModal()" title="ジャンプ">&#x1F50D;</button>
   </div>
 </div>
@@ -159,6 +166,7 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: var(
 <!-- Quiz View -->
 <div id="quiz" class="view active">
   <div class="quiz-container">
+    <div class="today-bar">今日の学習: <span class="today-count" id="todayCount">0</span> 枚 <span class="today-goal" id="todayGoal"></span></div>
     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
     <div class="progress-text" id="progressText"></div>
     <div class="card" id="quizCard"></div>
@@ -238,41 +246,55 @@ body { font-family: -apple-system, 'Hiragino Sans', sans-serif; background: var(
 <script>
 // State
 let allSentences = [];
-let currentIndex = 0;
+let displayOrder = [];
+let currentOrderIndex = 0;
 let ratings = {};
 let answered = {};
 let streak = 0;
 let lastStudyDate = null;
 let customWords = [];
+let shuffleMode = false;
+let todayViewed = {};
+let todayViewedDate = null;
 
 function init() {
   loadState();
   buildSentenceList();
+  buildDisplayOrder();
   restorePosition();
   renderQuiz();
   renderList();
   renderStats();
   setupTabs();
+  updateShuffleBtn();
 }
 
 function loadState() {
   try {
     ratings = JSON.parse(localStorage.getItem('em_ratings') || '{}');
     answered = JSON.parse(localStorage.getItem('em_answered') || '{}');
-    currentIndex = parseInt(localStorage.getItem('em_position') || '0');
+    currentOrderIndex = parseInt(localStorage.getItem('em_position') || '0');
     streak = parseInt(localStorage.getItem('em_streak') || '0');
     lastStudyDate = localStorage.getItem('em_lastDate');
     customWords = JSON.parse(localStorage.getItem('em_custom') || '[]');
+    shuffleMode = localStorage.getItem('em_shuffle') === 'true';
+    todayViewedDate = localStorage.getItem('em_tvDate');
+    todayViewed = JSON.parse(localStorage.getItem('em_tvSet') || '{}');
+    const today = new Date().toISOString().slice(0,10);
+    if (todayViewedDate !== today) { todayViewed = {}; todayViewedDate = today; }
   } catch(e) { console.error(e); }
 }
 
 function saveState() {
   localStorage.setItem('em_ratings', JSON.stringify(ratings));
   localStorage.setItem('em_answered', JSON.stringify(answered));
-  localStorage.setItem('em_position', currentIndex.toString());
+  localStorage.setItem('em_position', currentOrderIndex.toString());
   localStorage.setItem('em_streak', streak.toString());
   localStorage.setItem('em_lastDate', lastStudyDate);
   localStorage.setItem('em_custom', JSON.stringify(customWords));
+  localStorage.setItem('em_shuffle', shuffleMode.toString());
+  localStorage.setItem('em_tvDate', todayViewedDate);
+  localStorage.setItem('em_tvSet', JSON.stringify(todayViewed));
 }
 
 function buildSentenceList() {
@@ -296,8 +318,37 @@ function extractBlank(en) {
   return m ? m[1] : '';
 }
 
+function buildDisplayOrder() {
+  displayOrder = allSentences.map((_, i) => i);
+  if (shuffleMode) {
+    for (let i = displayOrder.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [displayOrder[i], displayOrder[j]] = [displayOrder[j], displayOrder[i]];
+    }
+  }
+}
+
+function getCurrentIndex() {
+  return displayOrder[currentOrderIndex] || 0;
+}
+
 function restorePosition() {
-  if (currentIndex >= allSentences.length) currentIndex = 0;
+  if (currentOrderIndex >= allSentences.length) currentOrderIndex = 0;
+}
+
+function toggleShuffle() {
+  shuffleMode = !shuffleMode;
+  currentOrderIndex = 0;
+  buildDisplayOrder();
+  saveState();
+  updateShuffleBtn();
+  renderQuiz();
+  showToast(shuffleMode ? 'シャッフルON' : '順番通り');
+}
+
+function updateShuffleBtn() {
+  const btn = document.getElementById('shuffleBtn');
+  if (btn) btn.classList.toggle('active-mode', shuffleMode);
 }
 
 function updateStreak() {
@@ -311,11 +362,36 @@ function updateStreak() {
 }
 
 // Quiz
+function trackView(sid) {
+  const today = new Date().toISOString().slice(0,10);
+  if (todayViewedDate !== today) { todayViewed = {}; todayViewedDate = today; }
+  todayViewed[sid] = true;
+  updateStreak();
+  saveState();
+  updateTodayBar();
+}
+
+function updateTodayBar() {
+  const count = Object.keys(todayViewed).length;
+  const el = document.getElementById('todayCount');
+  const goal = document.getElementById('todayGoal');
+  if (el) el.textContent = count;
+  if (goal) {
+    if (count >= 30) goal.textContent = '🔥 すごい！絶好調！';
+    else if (count >= 20) goal.textContent = '✨ いい調子！';
+    else if (count >= 10) goal.textContent = '👍 順調！';
+    else goal.textContent = '（目標: 10枚）';
+  }
+}
+
 function renderQuiz() {
   if (allSentences.length === 0) return;
-  const s = allSentences[currentIndex];
+  const ci = getCurrentIndex();
+  const s = allSentences[ci];
   const rating = ratings[s.sid];
   const isAnswered = answered[s.sid];
+
+  trackView(s.sid);
 
   const enDisplay = s.en.replace(/\{([^}]+)\}/g, (_, word) => {
     if (isAnswered) return `<span class="blank revealed">${word}</span>`;
@@ -323,7 +399,7 @@ function renderQuiz() {
   });
 
   document.getElementById('quizCard').innerHTML = `
-    <div class="card-word">#${s.number || '?'} ${s.word} <span class="card-category">${s.category}</span>
+    <div class="card-word">#${s.number || '?'} ${isAnswered ? s.word : '???'} <span class="card-category">${s.category}</span>
       ${getSRBadge(s.sid)}
     </div>
     <div class="card-ja">${s.ja}</div>
@@ -343,11 +419,11 @@ function renderQuiz() {
     `}
   `;
 
-  const pct = ((currentIndex + 1) / allSentences.length * 100).toFixed(0);
+  const pct = ((currentOrderIndex + 1) / allSentences.length * 100).toFixed(0);
   document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressText').textContent = `${currentIndex + 1} / ${allSentences.length}`;
-  document.getElementById('prevBtn').disabled = currentIndex === 0;
-  document.getElementById('nextBtn').disabled = currentIndex === allSentences.length - 1;
+  document.getElementById('progressText').textContent = `${currentOrderIndex + 1} / ${allSentences.length}`;
+  document.getElementById('prevBtn').disabled = currentOrderIndex === 0;
+  document.getElementById('nextBtn').disabled = currentOrderIndex === allSentences.length - 1;
 
   if (!isAnswered) {
     const inp = document.getElementById('answerInput');
@@ -361,7 +437,7 @@ function renderQuiz() {
 function checkAnswer() {
   const inp = document.getElementById('answerInput');
   if (!inp) return;
-  const s = allSentences[currentIndex];
+  const s = allSentences[getCurrentIndex()];
   const userAns = inp.value.trim().toLowerCase();
   const correct = s.blank.toLowerCase();
 
@@ -382,7 +458,7 @@ function checkAnswer() {
 }
 
 function revealAnswer() {
-  const s = allSentences[currentIndex];
+  const s = allSentences[getCurrentIndex()];
   answered[s.sid] = true;
   updateStreak();
   saveState();
@@ -398,7 +474,7 @@ function rate(sid, level) {
 }
 
 function navigate(dir) {
-  currentIndex = Math.max(0, Math.min(allSentences.length - 1, currentIndex + dir));
+  currentOrderIndex = Math.max(0, Math.min(allSentences.length - 1, currentOrderIndex + dir));
   saveState();
   renderQuiz();
 }
@@ -475,7 +551,16 @@ function renderStats() {
   ];
   const tip = tips[Math.floor(Math.random() * tips.length)];
 
+  const todayCount = Object.keys(todayViewed).length;
+
   document.getElementById('statsContent').innerHTML = `
+    <div class="stat-card">
+      <h3>今日の学習量</h3>
+      <div class="streak-info">
+        <div class="streak-num">${todayCount}</div>
+        <div class="streak-label">枚表示 ${todayCount >= 30 ? '🔥 絶好調！' : todayCount >= 20 ? '✨ いい調子！' : todayCount >= 10 ? '👍 順調！' : '（目標: 10枚）'}</div>
+      </div>
+    </div>
     <div class="stat-card">
       <h3>学習ストリーク</h3>
       <div class="streak-info">
@@ -604,7 +689,8 @@ function closeJumpModal() {
 }
 
 function jumpTo(index) {
-  currentIndex = index;
+  const oi = displayOrder.indexOf(index);
+  currentOrderIndex = oi >= 0 ? oi : 0;
   saveState();
   document.querySelector('[data-view="quiz"]').click();
   renderQuiz();
