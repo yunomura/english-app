@@ -300,14 +300,15 @@ function saveState() {
 function buildSentenceList() {
   allSentences = [];
   const allWords = [...WORD_DATA, ...customWords];
-  let nextId = 1000;
   allWords.forEach(w => {
     w.sentences.forEach((s, si) => {
       const sid = `${w.number || 'c'+w.id}_${si}`;
-      const blankWord = s.blank || extractBlank(s.en);
+      const blanks = [];
+      s.en.replace(/\{([^}]+)\}/g, (_, word) => { blanks.push(word); });
+      const answer = blanks.join(' ');
       allSentences.push({
         sid, word: w.word, number: w.number || '', category: w.category || '',
-        ja: s.ja, en: s.en, blank: blankWord
+        ja: s.ja, en: s.en, answer
       });
     });
   });
@@ -399,9 +400,7 @@ function renderQuiz() {
   });
 
   document.getElementById('quizCard').innerHTML = `
-    <div class="card-word">#${s.number || '?'} ${isAnswered ? s.word : '???'} <span class="card-category">${s.category}</span>
-      ${getSRBadge(s.sid)}
-    </div>
+    <div class="card-word">#${s.number || '?'} ${getSRBadge(s.sid)}</div>
     <div class="card-ja">${s.ja}</div>
     <div class="card-en">${enDisplay}</div>
     ${!isAnswered ? `
@@ -439,7 +438,7 @@ function checkAnswer() {
   if (!inp) return;
   const s = allSentences[getCurrentIndex()];
   const userAns = inp.value.trim().toLowerCase();
-  const correct = s.blank.toLowerCase();
+  const correct = s.answer.toLowerCase();
 
   if (userAns === correct) {
     answered[s.sid] = true;
