@@ -100,4 +100,126 @@ const WORD_DATA = [
       { ja: "彼のパフォーマンスにはすごく驚かされた。", en: "His performance {amazed} me.", note: "動: amaze ～をすごく驚かせる" },
     ]
   },
+  {
+    id: 15, word: "apologize", number: "0073", category: "謝る",
+    sentences: [
+      { ja: "謝りたします。", en: "I {apologize}.", note: "apologize (to 人) for ～: (人に)～のことで謝る" },
+      { ja: "間違いを謝罪いたします。", en: "I {apologize for} the mistake.", note: "apologize for ●: ●について謝る" },
+      { ja: "彼女は失礼な態度に対して、謝罪してきた。", en: "She {apologized to} me for being rude.", note: "apologize to 人 for ●: 人に●を謝る" },
+    ]
+  },
+  {
+    id: 16, word: "guilty", number: "0074", category: "謝る",
+    sentences: [
+      { ja: "メアリーに小さな嘘をついてしまったことに罪悪感を感じた。", en: "I {felt guilty about} telling a small lie to Mary.", note: "feel guilty about ●: ●に罪悪感を感じる" },
+      { ja: "自分のミスに罪悪感を感じた。", en: "I {felt guilty about} my mistake.", note: "feel guilty: 罪悪感を感じる" },
+    ]
+  },
+  {
+    id: 17, word: "hurt", number: "0075", category: "つらい",
+    sentences: [
+      { ja: "傷ついている。", en: "I'm {hurt}.", note: "メンタルを傷つけるニュアンスが多い" },
+      { ja: "指を切って、(それが)痛い。", en: "I cut my finger and it {hurts}.", note: "動: 痛む。主語が痛みの原因" },
+      { ja: "彼の言葉に傷ついた。", en: "His words {hurt} me.", note: "動: ～を傷つける" },
+    ]
+  },
+  {
+    id: 18, word: "bitter", number: "0076", category: "つらい",
+    sentences: [
+      { ja: "それはつらい経験だね。", en: "That's a {bitter} experience.", note: "形: ほろ苦い経験のようなつらさ" },
+      { ja: "このコーヒーは苦い？甘い？", en: "Is this coffee {bitter} or sweet?", note: "形: 苦い（味）" },
+    ]
+  },
+  {
+    id: 19, word: "painful", number: "0077", category: "つらい",
+    sentences: [
+      { ja: "友達が昨年に亡くなって…つらい経験だったよ。", en: "I lost my friend last year, which was a {painful} experience.", note: "形: つらい、痛い" },
+      { ja: "そのけが、痛そうだね。", en: "The injury looks {painful}.", note: "look painful: 痛そうに見える" },
+      { ja: "足の骨折ったの？痛そう…。", en: "You broke your leg? That's {painful}...", note: "That's painful: それは痛い/つらい" },
+    ]
+  },
+  {
+    id: 20, word: "tough", number: "0078", category: "大変・キツイ",
+    sentences: [
+      { ja: "大学時代は、大変な時期を過ごした。", en: "I had a {tough} time in college.", note: "形: 大変な。tough time: 大変な時期" },
+    ]
+  },
+  {
+    id: 21, word: "harsh", number: "0079", category: "大変・キツイ",
+    sentences: [
+      { ja: "あの会社で働いたのは、きつい経験でした。", en: "Working at the company was a {harsh} experience.", note: "形: 厳しい、過酷な" },
+    ]
+  },
+  {
+    id: 22, word: "disappoint", number: "0080", category: "落ち込む",
+    sentences: [
+      { ja: "息子のテストの結果にがっかりした。", en: "My son's test result {disappointed} me.", note: "動: ～をがっかりさせる" },
+      { ja: "彼女は自分自身にがっかりしている。", en: "She is {disappointed} with herself.", note: "be disappointed with ●: ●にがっかりしている" },
+    ]
+  },
+  {
+    id: 23, word: "depress", number: "0081", category: "落ち込む",
+    sentences: [
+      { ja: "あの悲しい映画で憂鬱な気分になった。", en: "That sad movie {depressed} me.", note: "動: ～を憂鬱にさせる" },
+      { ja: "春は気分が下がる。", en: "I get {depressed} in spring.", note: "get depressed: 憂鬱な気分になる" },
+      { ja: "父親がいなくなって落ち込んだ。", en: "I was {depressed} by the loss of my father.", note: "be depressed by ●: ●で落ち込む" },
+    ]
+  },
+  {
+    id: 24, word: "suffer", number: "0082", category: "苦しむ",
+    sentences: [
+      { ja: "人は物価高に苦しんでいる。", en: "People are {suffering from} high prices.", note: "suffer from ～: ～で苦しむ" },
+    ]
+  },
+  {
+    id: 25, word: "struggle", number: "0083", category: "苦しむ",
+    sentences: [
+      { ja: "タマネギを切るのに苦戦している。", en: "I'm {struggling with} cutting onions.", note: "struggle with ～: ～に苦戦する、もがき苦しむ" },
+      { ja: "毎日運動を続けることに苦戦している。", en: "I'm {struggling to} keep working out every day.", note: "struggle to ●: ●することに苦戦する" },
+    ]
+  },
+  {
+    id: 26, word: "trouble", number: "0084", category: "苦しむ",
+    sentences: [
+      { ja: "その解決策を見つけるのにトラブった。", en: "I had {trouble} finding the solution.", note: "have trouble ●ing: ●するのに困る（状態）" },
+    ]
+  },
+  {
+    id: 27, word: "stand", number: "0085", category: "我慢する",
+    sentences: [
+      { ja: "その痛みにもう耐えられなかった。", en: "I couldn't {stand} the pain.", note: "動: ～を我慢する、～に耐える" },
+    ]
+  },
+  {
+    id: 28, word: "patient", number: "0086", category: "我慢する",
+    sentences: [
+      { ja: "大変なときは、忍耐強く問題を解決してね。", en: "During hard times, be {patient} and solve the problem.", note: "形: 忍耐強い" },
+    ]
+  },
+  {
+    id: 29, word: "tolerate", number: "0087", category: "怒る",
+    sentences: [
+      { ja: "目標を達成するには辛い時期を我慢しなきゃいけないときもある。", en: "To achieve goals, we sometimes have to {tolerate} difficulties.", note: "動: (忍耐強く)～を我慢する" },
+    ]
+  },
+  {
+    id: 30, word: "angry", number: "0089", category: "怒る",
+    sentences: [
+      { ja: "彼は自分自身のミスに怒った。", en: "He {got angry} about his own mistakes.", note: "get angry: 怒る（状態変化）" },
+      { ja: "怒りは状況を悪くするだけ。", en: "{Anger} just makes the situation worse.", note: "名: anger 怒り" },
+      { ja: "メアリーは怒りをコントロールできないことがよくある。", en: "Mary often can't control her {anger}.", note: "control one's anger: 怒りをコントロールする" },
+    ]
+  },
+  {
+    id: 31, word: "furious", number: "0090", category: "怒る",
+    sentences: [
+      { ja: "彼はその言葉に大激怒している。", en: "He is so {furious about} the words.", note: "be furious about 物: 物に激怒している" },
+    ]
+  },
+  {
+    id: 32, word: "resist", number: "0088", category: "我慢する",
+    sentences: [
+      { ja: "チョコをもう1個食べるのを我慢できなかった。（抵抗できなかった）", en: "I couldn't {resist} eating one more chocolate.", note: "resist ●ing: ●するのを我慢する（抵抗する）" },
+    ]
+  },
 ];
